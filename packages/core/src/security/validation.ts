@@ -16,8 +16,8 @@ export const schemas = {
   jsonRpcId: z.union([z.string(), z.number(), z.null()]),
 };
 
-// A2A Message schema
-export const A2AMessageSchema = z.object({
+// A2A Message validation schema (for input validation)
+export const A2AMessageValidationSchema = z.object({
   role: z.enum(['user', 'agent']),
   parts: z
     .array(
@@ -47,8 +47,8 @@ export const A2AMessageSchema = z.object({
   taskId: z.string().optional(),
 });
 
-// A2A Task schema
-export const A2ATaskSchema = z.object({
+// A2A Task validation schema
+export const A2ATaskValidationSchema = z.object({
   id: z.string(),
   contextId: z.string().optional(),
   status: z.object({
@@ -62,10 +62,10 @@ export const A2ATaskSchema = z.object({
       'canceled',
       'rejected',
     ]),
-    message: A2AMessageSchema.optional(),
+    message: A2AMessageValidationSchema.optional(),
     timestamp: z.number().optional(),
   }),
-  history: z.array(A2AMessageSchema).optional(),
+  history: z.array(A2AMessageValidationSchema).optional(),
   artifacts: z
     .array(
       z.object({
@@ -77,8 +77,8 @@ export const A2ATaskSchema = z.object({
     .optional(),
 });
 
-// Agent Card schema
-export const AgentCardSchema = z.object({
+// Agent Card validation schema
+export const AgentCardValidationSchema = z.object({
   identity: z.object({
     name: z.string().min(1).max(256),
     description: z.string().max(1000),

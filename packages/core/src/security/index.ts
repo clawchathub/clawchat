@@ -27,9 +27,9 @@ export {
 
 export {
   schemas,
-  A2AMessageSchema,
-  A2ATaskSchema,
-  AgentCardSchema,
+  A2AMessageValidationSchema,
+  A2ATaskValidationSchema,
+  AgentCardValidationSchema,
   JsonRpcRequestSchema,
   JsonRpcResponseSchema,
   InputValidator,

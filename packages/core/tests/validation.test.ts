@@ -7,7 +7,7 @@ import {
   isValidUrl,
   hasSqlInjectionPatterns,
   hasXssPatterns,
-  A2AMessageSchema,
+  A2AMessageValidationSchema,
   JsonRpcRequestSchema,
 } from '../src/security/validation.js';
 
@@ -70,14 +70,14 @@ describe('sanitizeString', () => {
 
 describe('safeParseJson', () => {
   it('should reject invalid JSON', () => {
-    const result = safeParseJson('not json', A2AMessageSchema);
+    const result = safeParseJson('not json', A2AMessageValidationSchema);
     expect(result.success).toBe(false);
     expect(result.error).toContain('Invalid JSON');
   });
 
   it('should reject input exceeding max length', () => {
     const longJson = JSON.stringify({ data: 'a'.repeat(1000) });
-    const result = safeParseJson(longJson, A2AMessageSchema, 100);
+    const result = safeParseJson(longJson, A2AMessageValidationSchema, 100);
     expect(result.success).toBe(false);
     expect(result.error).toContain('maximum length');
   });
@@ -132,9 +132,9 @@ describe('hasXssPatterns', () => {
   });
 });
 
-describe('A2AMessageSchema', () => {
+describe('A2AMessageValidationSchema', () => {
   it('should validate text message', () => {
-    const result = A2AMessageSchema.safeParse({
+    const result = A2AMessageValidationSchema.safeParse({
       role: 'user',
       parts: [{ type: 'text', text: 'Hello' }],
     });
@@ -142,7 +142,7 @@ describe('A2AMessageSchema', () => {
   });
 
   it('should reject invalid role', () => {
-    const result = A2AMessageSchema.safeParse({
+    const result = A2AMessageValidationSchema.safeParse({
       role: 'invalid',
       parts: [{ type: 'text', text: 'Hello' }],
     });
@@ -150,7 +150,7 @@ describe('A2AMessageSchema', () => {
   });
 
   it('should require at least one part', () => {
-    const result = A2AMessageSchema.safeParse({
+    const result = A2AMessageValidationSchema.safeParse({
       role: 'user',
       parts: [],
     });
