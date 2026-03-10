@@ -88,7 +88,7 @@ export class ReputationTracker {
       type,
       timestamp: Date.now(),
       delta,
-      reason,
+      ...(reason !== undefined && { reason }),
     };
 
     reputation.events.push(event);
