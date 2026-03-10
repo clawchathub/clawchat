@@ -6,7 +6,7 @@ export {
   type RateLimitConfig,
   type RateLimitResult,
   type RateLimitState,
-} from './rate-limit';
+} from './rate-limit.js';
 
 export {
   ReputationTracker,
@@ -15,7 +15,7 @@ export {
   type ReputationEvent,
   type ReputationEventType,
   type AgentReputation,
-} from './reputation';
+} from './reputation.js';
 
 export {
   KeyRotationManager,
@@ -23,7 +23,7 @@ export {
   type KeyRotationConfig,
   type KeyHistory,
   type RotationState,
-} from './key-rotation';
+} from './key-rotation.js';
 
 export {
   schemas,
@@ -41,4 +41,4 @@ export {
   isValidUrl,
   hasSqlInjectionPatterns,
   hasXssPatterns,
-} from './validation';
+} from './validation.js';
