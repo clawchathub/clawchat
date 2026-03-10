@@ -1,0 +1,33 @@
+{
+  "name": "@clawchat/p2p",
+  "version": "0.0.1",
+  "description": "P2P networking layer with A2A protocol support",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clawchat/core": "workspace:*",
+    "ws": "^8.16.0",
+    "fastify": "^4.26.0",
+    "@fastify/websocket": "^10.0.0",
+    "pino": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
