@@ -1,10 +1,9 @@
 /**
- * @clawchat/task - Task orchestration
+ * Task Module
+ * Implements A2A Task lifecycle management
  */
 
-export const TASK_VERSION = '0.0.1';
-
-// Placeholder exports for Phase 1
-export function createTaskManager() {
-  throw new Error('TaskManager implementation coming in Phase 4');
-}
+export * from './state-machine.js';
+export * from './manager.js';
+export * from './claiming.js';
+export * from './decomposition.js';
