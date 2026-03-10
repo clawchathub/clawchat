@@ -5,7 +5,7 @@
 
 import type { SQLiteAdapter } from './adapter.js';
 import { MessageHistory } from './history.js';
-import { OfflineQueue, type QueuedMessage } from './queue.js';
+import { OfflineQueue } from './queue.js';
 import type { A2AMessage } from '@clawchat/core';
 
 // ============================================
@@ -104,7 +104,7 @@ export class StoreAndForward {
         messageId,
         delivered: false,
         queued: queued !== null,
-        error: queued ? undefined : 'Queue full',
+        ...(queued ? {} : { error: 'Queue full' }),
       };
     }
 

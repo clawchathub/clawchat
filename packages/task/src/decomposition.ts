@@ -114,8 +114,8 @@ export class TaskDecomposition {
           ...definition.metadata,
           parentId: parentTask.id,
           description: definition.description,
-          dependencies: definition.dependencies,
-          assignedTo: definition.assignedTo,
+          dependencies: (definition.dependencies || []).join(','),
+          assignedTo: definition.assignedTo || '',
           decompositionStrategy: plan.strategy,
         },
       };
@@ -128,8 +128,8 @@ export class TaskDecomposition {
     if (!parentTask.metadata) {
       parentTask.metadata = {};
     }
-    parentTask.metadata.decomposed = true;
-    parentTask.metadata.subtaskCount = subtasks.length;
+    parentTask.metadata.decomposed = 'true';
+    parentTask.metadata.subtaskCount = String(subtasks.length);
     parentTask.metadata.decompositionStrategy = plan.strategy;
 
     return subtasks;
@@ -274,7 +274,7 @@ export class TaskDecomposition {
   /**
    * Get task tree as nested structure
    */
-  getTree(taskId: string): { task: A2ATask; children: ReturnType<typeof this.getTree>[] } | null {
+  getTree(taskId: string): { task: A2ATask; children: Array<{ task: A2ATask; children: unknown[] }> } | null {
     const node = this.nodes.get(taskId);
     if (!node) return null;
 

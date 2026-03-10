@@ -263,7 +263,7 @@ export class STUNClient {
    */
   private parseXorMappedAddress(
     data: Buffer,
-    transactionId: Buffer
+    _transactionId: Buffer
   ): { ip: string; port: number } | null {
     const family = data[1];
     const xport = data.readUInt16BE(2);

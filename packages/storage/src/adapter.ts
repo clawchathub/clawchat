@@ -4,7 +4,7 @@
  */
 
 import Database from 'better-sqlite3';
-import type { A2AMessage, A2ATask, AgentCard } from '@clawchat/core';
+import type { A2ATask, AgentCard } from '@clawchat/core';
 
 // ============================================
 // Types
@@ -45,10 +45,8 @@ export interface TaskRecord {
 
 export class SQLiteAdapter {
   private db: Database.Database;
-  private config: StorageConfig;
 
   constructor(config: StorageConfig) {
-    this.config = config;
     this.db = new Database(config.path, {
       verbose: config.verbose ? console.log : undefined,
     });

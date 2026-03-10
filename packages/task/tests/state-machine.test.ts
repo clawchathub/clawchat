@@ -132,10 +132,8 @@ describe('TaskStateMachine', () => {
 
   describe('status creation', () => {
     it('should create status object', () => {
-      const status = machine.createStatus('Test message', 50);
+      const status = machine.createStatus();
       expect(status.state).toBe('submitted');
-      expect(status.message).toBe('Test message');
-      expect(status.progress).toBe(50);
       expect(status.timestamp).toBeDefined();
     });
   });

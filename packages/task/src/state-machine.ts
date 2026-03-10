@@ -3,6 +3,8 @@
  * Implements A2A Task lifecycle with all state transitions
  */
 
+import type { A2AMessage } from '@clawchat/core';
+
 // ============================================
 // Types
 // ============================================
@@ -22,8 +24,7 @@ export type TerminalState = 'completed' | 'failed' | 'canceled' | 'rejected';
 export interface TaskStatus {
   state: TaskState;
   timestamp: number;
-  message?: string;
-  progress?: number; // 0-100
+  message?: A2AMessage;
 }
 
 export interface StateTransition {
@@ -149,12 +150,11 @@ export class TaskStateMachine {
   /**
    * Create status object for current state
    */
-  createStatus(message?: string, progress?: number): TaskStatus {
+  createStatus(message?: A2AMessage): TaskStatus {
     return {
       state: this.currentState,
       timestamp: Date.now(),
       message,
-      progress,
     };
   }
 
@@ -203,7 +203,7 @@ export function isValidTaskStatus(status: unknown): status is TaskStatus {
 /**
  * Create initial task status
  */
-export function createInitialStatus(message?: string): TaskStatus {
+export function createInitialStatus(message?: A2AMessage): TaskStatus {
   return {
     state: 'submitted',
     timestamp: Date.now(),

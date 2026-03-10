@@ -3,7 +3,7 @@
  * Implements hole punching and ICE-like coordination
  */
 
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import type { NATType, STUNResult } from './stun.js';
 
 // ============================================
@@ -107,7 +107,7 @@ export class NATTraversal {
 
       try {
         // Create WebSocket server for incoming connections
-        const server = new WebSocket.Server({ port: localPort });
+        const server = new WebSocketServer({ port: localPort });
 
         const result = await new Promise<HolePunchResult>((resolve) => {
           const timeout = setTimeout(() => {

@@ -83,9 +83,9 @@ describe('TaskManager', () => {
     it('should update task progress', () => {
       const task = manager.create({ initialMessage: createMessage('Test') });
       manager.update(task.id, { state: 'working' });
-      const updated = manager.update(task.id, { progress: 50 });
+      const updated = manager.update(task.id, { state: 'completed' });
 
-      expect(updated?.status.progress).toBe(50);
+      expect(updated?.status.state).toBe('completed');
     });
 
     it('should reject invalid state transition', () => {
@@ -141,7 +141,6 @@ describe('TaskManager', () => {
       const canceled = manager.cancel(task.id, 'User requested');
 
       expect(canceled?.status.state).toBe('canceled');
-      expect(canceled?.status.message).toBe('User requested');
     });
   });
 

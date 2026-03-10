@@ -182,19 +182,19 @@ export class RelayServer {
             }
 
             publicKey = claimedPublicKey;
-            this.agents.set(publicKey, {
+            this.agents.set(claimedPublicKey, {
               id: agentId,
-              publicKey,
+              publicKey: claimedPublicKey,
               socket,
               agentCard,
               connectedAt: Date.now(),
             });
 
-            this.agentRegistry.set(publicKey, agentCard);
-            console.log(`Agent registered: ${publicKey}`);
+            this.agentRegistry.set(claimedPublicKey, agentCard);
+            console.log(`Agent registered: ${claimedPublicKey}`);
 
             // Deliver queued messages
-            this.deliverQueuedMessages(publicKey);
+            this.deliverQueuedMessages(claimedPublicKey);
 
             socket.send(JSON.stringify({ type: 'registered', agentId }));
           } else {

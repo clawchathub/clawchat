@@ -56,8 +56,8 @@ describe('TaskDecomposition', () => {
       const subtasks = decomposition.decompose(parent, plan);
 
       expect(subtasks.length).toBe(3);
-      expect(parent.metadata?.decomposed).toBe(true);
-      expect(parent.metadata?.subtaskCount).toBe(3);
+      expect(parent.metadata?.decomposed).toBe('true');
+      expect(parent.metadata?.subtaskCount).toBe('3');
     });
 
     it('should set parent metadata', () => {

@@ -89,7 +89,7 @@ export class ConnectionCache {
   /**
    * Store a successful connection path
    */
-  set(peerPublicKey: string, path: Omit<ConnectionPath, 'createdAt' | 'lastUsed' | 'attempts' | 'successes' | 'successRate'>): void {
+  set(peerPublicKey: string, path: Omit<ConnectionPath, 'peerPublicKey' | 'createdAt' | 'lastUsed' | 'attempts' | 'successes' | 'successRate'>): void {
     // Enforce max entries
     if (this.cache.size >= this.config.maxEntries) {
       this.evictOldest();
@@ -99,6 +99,7 @@ export class ConnectionCache {
     const existing = this.cache.get(peerPublicKey);
 
     this.cache.set(peerPublicKey, {
+      peerPublicKey,
       ...path,
       createdAt: existing?.createdAt ?? now,
       lastUsed: now,

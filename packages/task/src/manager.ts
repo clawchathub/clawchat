@@ -3,8 +3,8 @@
  * Orchestrates task lifecycle and operations
  */
 
-import { TaskStateMachine, type TaskState, type TaskStatus } from './state-machine.js';
-import type { A2ATask, A2AMessage } from '@clawchat/core';
+import { TaskStateMachine, type TaskState } from './state-machine.js';
+import type { A2ATask, A2AMessage, Artifact } from '@clawchat/core';
 import { v4 as uuidv4 } from 'uuid';
 
 // ============================================
@@ -22,7 +22,7 @@ export interface TaskUpdate {
   state?: TaskState;
   message?: string;
   progress?: number;
-  artifact?: A2ATask['artifacts'][0];
+  artifact?: Artifact;
 }
 
 export interface TaskFilter {
@@ -66,7 +66,7 @@ export class TaskManager {
       contextId,
       status,
       history: [options.initialMessage],
-      metadata: options.metadata,
+      metadata: options.metadata as Record<string, string> | undefined,
     };
 
     this.tasks.set(taskId, task);
@@ -108,12 +108,13 @@ export class TaskManager {
         return null;
       }
 
-      task.status = stateMachine.createStatus(update.message, update.progress);
+      task.status = {
+        state: update.state,
+        timestamp: Date.now(),
+      };
     } else if (update.message || update.progress !== undefined) {
       task.status = {
         ...task.status,
-        message: update.message,
-        progress: update.progress,
         timestamp: Date.now(),
       };
     }
@@ -143,6 +144,9 @@ export class TaskManager {
       return null;
     }
 
+    if (!task.history) {
+      task.history = [];
+    }
     task.history.push(message);
     return task;
   }
