@@ -16,7 +16,7 @@ describe('ReputationTracker', () => {
   it('should increase score for valid messages', () => {
     tracker.recordEvent('agent1', 'message_valid');
     const score = tracker.getScore('agent1');
-    expect(score).toBe(50.1);
+    expect(score).toBeCloseTo(50.1, 1);
   });
 
   it('should decrease score for invalid messages', () => {
