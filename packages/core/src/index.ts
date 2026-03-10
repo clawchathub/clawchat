@@ -13,3 +13,6 @@ export * from './message/index.js';
 
 // Protocol
 export * from './protocol/index.js';
+
+// Crypto
+export * from './crypto/index.js';

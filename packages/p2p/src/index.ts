@@ -1,14 +1,17 @@
 /**
- * @clawchat/p2p - P2P networking layer
+ * @clawchat/p2p - P2P networking layer with A2A protocol support
  */
 
 export const P2P_VERSION = '0.0.1';
 
-// Placeholder exports for Phase 1
-export function createServer() {
-  throw new Error('Server implementation coming in Phase 2');
-}
+// JSON-RPC Server
+export * from './jsonrpc/index.js';
 
-export function createClient() {
-  throw new Error('Client implementation coming in Phase 2');
-}
+// Relay Server
+export * from './relay/index.js';
+
+// Transport (Client)
+export * from './transport/index.js';
+
+// Discovery
+export * from './discovery/index.js';
