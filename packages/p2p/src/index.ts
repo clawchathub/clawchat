@@ -15,3 +15,12 @@ export * from './transport/index.js';
 
 // Discovery
 export * from './discovery/index.js';
+
+// NAT Traversal
+export * from './nat/index.js';
+
+// Connection Management
+export * from './connection/index.js';
+
+// Bootstrap Configuration
+export * from './bootstrap/index.js';
