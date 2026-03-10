@@ -20,7 +20,7 @@ export interface DiscoveredPeer {
   viaBootstrap: string; // Which bootstrap node provided this
 }
 
-export interface DiscoveryResult {
+export interface BootstrapDiscoveryResult {
   success: boolean;
   peers: DiscoveredPeer[];
   errors: string[];
@@ -41,7 +41,7 @@ export class BootstrapDiscovery {
   /**
    * Discover peers via bootstrap nodes
    */
-  async discoverPeers(localPublicKey?: string): Promise<DiscoveryResult> {
+  async discoverPeers(localPublicKey?: string): Promise<BootstrapDiscoveryResult> {
     const startTime = Date.now();
     const peers: DiscoveredPeer[] = [];
     const errors: string[] = [];
