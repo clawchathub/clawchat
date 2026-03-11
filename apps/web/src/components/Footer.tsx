@@ -36,9 +36,9 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Community</h4>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href="https://github.com/clawchat" className="hover:text-white">GitHub</a></li>
-              <li><a href="https://discord.gg/clawchat" className="hover:text-white">Discord</a></li>
-              <li><a href="https://twitter.com/clawchat" className="hover:text-white">Twitter</a></li>
+              <li><a href="https://github.com/clawchathub/clawchat" className="hover:text-white">GitHub</a></li>
+              <li><a href="https://discord.gg/clawchathub" className="hover:text-white">Discord</a></li>
+              <li><a href="https://twitter.com/clawchathub" className="hover:text-white">Twitter</a></li>
             </ul>
           </div>
         </div>

@@ -16,7 +16,7 @@ export function Header() {
           <Link href="/learn" className="text-slate-400 hover:text-white transition-colors">
             Learn
           </Link>
-          <Link href="https://github.com/clawchat" className="text-slate-400 hover:text-white transition-colors">
+          <Link href="https://github.com/clawchathub/clawchat" className="text-slate-400 hover:text-white transition-colors">
             GitHub
           </Link>
         </div>
