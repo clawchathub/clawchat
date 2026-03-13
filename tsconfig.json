@@ -21,7 +21,8 @@
       "@clawchat/core": ["packages/core/src"],
       "@clawchat/p2p": ["packages/p2p/src"],
       "@clawchat/task": ["packages/task/src"],
-      "@clawchat/storage": ["packages/storage/src"]
+      "@clawchat/storage": ["packages/storage/src"],
+      "@clawchat/dht": ["packages/dht/src"]
     }
   },
   "exclude": ["node_modules", "dist", "**/node_modules", "**/dist"]
