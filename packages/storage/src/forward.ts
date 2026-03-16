@@ -12,6 +12,13 @@ import type { A2AMessage } from '@clawchat/core';
 // Types
 // ============================================
 
+interface Logger {
+  info: (...args: unknown[]) => void;
+  debug: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+}
+
 export interface ForwardResult {
   success: boolean;
   messageId: string;
@@ -29,6 +36,7 @@ export interface ForwardConfig {
   enableQueue: boolean;
   retryEnabled: boolean;
   retryInterval: number;
+  logger?: Logger;
 }
 
 // ============================================
@@ -42,6 +50,7 @@ export class StoreAndForward {
   private config: ForwardConfig;
   private deliveryCallback: DeliveryCallback | null = null;
   private retryTimer: ReturnType<typeof setInterval> | null = null;
+  private logger: Logger;
 
   constructor(
     adapter: SQLiteAdapter,
@@ -50,11 +59,18 @@ export class StoreAndForward {
     this.adapter = adapter;
     this.history = new MessageHistory(adapter);
     this.queue = new OfflineQueue(adapter);
+    this.logger = config.logger ?? {
+      info: (...args) => console.log(...args),
+      debug: (...args) => console.debug(...args),
+      error: (...args) => console.error(...args),
+      warn: (...args) => console.warn(...args),
+    };
     this.config = {
       enableHistory: config.enableHistory ?? true,
       enableQueue: config.enableQueue ?? true,
       retryEnabled: config.retryEnabled ?? true,
       retryInterval: config.retryInterval ?? 60000, // 1 minute
+      logger: this.logger,
     };
   }
 
@@ -165,7 +181,7 @@ export class StoreAndForward {
     }
 
     this.retryTimer = setInterval(() => {
-      this.processRetries().catch(console.error);
+      this.processRetries().catch((error) => this.logger.error('Retry processing error:', error));
     }, this.config.retryInterval);
   }
 

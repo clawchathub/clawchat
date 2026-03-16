@@ -250,13 +250,13 @@ export class KademliaRPC {
   private messageHandlers: Map<RPCMessageType, MessageHandler[]> = new Map();
   private logger: Logger;
 
-  constructor(localNodeId: NodeID, config: RPCConfig) {
+  constructor(localNodeId: NodeID, config: RPCConfig, logger?: Logger) {
     this.localNodeId = localNodeId;
     this.port = config.port;
     this.address = config.address ?? '0.0.0.0';
     this.timeout = config.timeout ?? DEFAULT_TIMEOUT;
     this.maxRetries = config.maxRetries ?? DEFAULT_MAX_RETRIES;
-    this.logger = {
+    this.logger = logger ?? {
       info: (msg: string) => console.log(`[KademliaRPC] ${msg}`),
       debug: (obj: object, msg: string) => console.debug(`[KademliaRPC] ${msg}`, obj),
       error: (obj: object, msg: string) => console.error(`[KademliaRPC] ${msg}`, obj),
@@ -644,6 +644,32 @@ export class KademliaRPC {
       timestamp: Date.now(),
       requestMessageId,
       success
+    };
+  }
+
+  /**
+   * 创建FindValue响应 (带签名)
+   * 用于返回带签名的值
+   */
+  createFindValueResponseWithSignature(
+    requestMessageId: string,
+    value: Uint8Array,
+    signature: string,
+    publisherKey: string
+  ): FindValueResponseMessage {
+    return {
+      type: RPCMessageType.FIND_VALUE_RESPONSE,
+      messageId: generateMessageId(),
+      senderId: this.localNodeId,
+      timestamp: Date.now(),
+      requestMessageId,
+      value,
+      // 将签名信息附加到响应中 (使用 metadata 字段)
+      nodes: [{
+        id: new Uint8Array(20), // 占位符
+        address: publisherKey, // 使用 address 字段传递 publisherKey
+        port: signature.length // 使用 port 字段传递签名长度作为标志
+      }]
     };
   }
 

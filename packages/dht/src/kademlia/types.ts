@@ -184,6 +184,10 @@ export interface StoreMessage extends RPCMessage {
   value: Uint8Array;
   /** TTL (秒,可选) */
   ttl?: number;
+  /** Ed25519 签名 (可选,用于验证) */
+  signature?: string;
+  /** 发布者的公钥 (hex编码) */
+  publisherKey?: string;
 }
 
 /**
@@ -252,6 +256,10 @@ export interface DHTEntry {
   createdAt: number;
   /** 发布者节点ID */
   publisherId: NodeID;
+  /** 发布者的公钥 (hex编码) */
+  publisherKey?: string;
+  /** Ed25519 签名 */
+  signature?: string;
 }
 
 /**

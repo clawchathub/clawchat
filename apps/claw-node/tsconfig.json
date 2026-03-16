@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "@clawchat/core": ["../../packages/core/src"],
+      "@clawchat/p2p": ["../../packages/p2p/src"],
+      "@clawchat/storage": ["../../packages/storage/src"],
+      "@clawchat/task": ["../../packages/task/src"],
+      "@clawchat/dht": ["../../packages/dht/src"]
+    }
+  },
+  "include": ["src/**/*"]
+}

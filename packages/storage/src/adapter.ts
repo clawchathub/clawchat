@@ -10,10 +10,18 @@ import type { A2ATask, AgentCard } from '@clawchat/core';
 // Types
 // ============================================
 
+interface Logger {
+  info: (...args: unknown[]) => void;
+  debug: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+}
+
 export interface StorageConfig {
   path: string;
   verbose?: boolean;
   walMode?: boolean;
+  logger?: Logger;
 }
 
 export interface MessageRecord {
@@ -45,11 +53,21 @@ export interface TaskRecord {
 
 export class SQLiteAdapter {
   private db: Database.Database;
+  private logger: Logger;
 
   constructor(config: StorageConfig) {
+    this.logger = config.logger ?? {
+      info: (...args) => console.log(...args),
+      debug: (...args) => console.debug(...args),
+      error: (...args) => console.error(...args),
+      warn: (...args) => console.warn(...args),
+    };
+
     this.db = new Database(config.path, {
-      verbose: config.verbose ? console.log : undefined,
+      verbose: config.verbose ? (...args: unknown[]) => this.logger.debug(String(args[0] ?? '')) : undefined,
     });
+
+    this.db.pragma('busy_timeout = 5000');
 
     if (config.walMode !== false) {
       this.db.pragma('journal_mode = WAL');

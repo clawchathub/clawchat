@@ -11,6 +11,13 @@ import { v4 as uuidv4 } from 'uuid';
 // Types
 // ============================================
 
+interface Logger {
+  info: (msg: string, ...args: unknown[]) => void;
+  debug: (msg: string, ...args: unknown[]) => void;
+  error: (msg: string, ...args: unknown[]) => void;
+  warn: (msg: string, ...args: unknown[]) => void;
+}
+
 export interface TaskOptions {
   id?: string;
   contextId?: string;
@@ -50,12 +57,28 @@ export class TaskManager {
   private stateMachines: Map<string, TaskStateMachine> = new Map();
   private listeners: Set<TaskEventListener> = new Set();
   private contextIndex: Map<string, Set<string>> = new Map();
+  private logger: Logger;
+
+  constructor(logger?: Logger) {
+    this.logger = logger ?? {
+      info: (msg: string, ...args: unknown[]) => console.log(msg, ...args),
+      error: (msg: string, ...args: unknown[]) => console.error(msg, ...args),
+      warn: (msg: string, ...args: unknown[]) => console.warn(msg, ...args),
+      debug: (msg: string, ...args: unknown[]) => console.debug(msg, ...args),
+    };
+  }
 
   /**
    * Create a new task
    */
   create(options: TaskOptions): A2ATask {
     const taskId = options.id ?? uuidv4();
+
+    // Duplicate check
+    if (this.tasks.has(taskId)) {
+      throw new Error(`Task with id '${taskId}' already exists`);
+    }
+
     const contextId = options.contextId ?? uuidv4();
 
     const stateMachine = new TaskStateMachine('submitted');
@@ -247,7 +270,7 @@ export class TaskManager {
       try {
         listener(event);
       } catch (error) {
-        console.error('Task event listener error:', error);
+        this.logger.error('Task event listener error:', error);
       }
     }
   }

@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  relay:
+    build: .
+    command: node apps/claw-node/dist/bin.js
+    environment:
+      - MODE=relay
+      - RELAY_PORT=18790
+      - HEALTH_PORT=18792
+      - LOG_LEVEL=info
+    ports:
+      - "18790:18790"
+      - "18792:18792"
+    volumes:
+      - relay-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:18792/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  node:
+    build: .
+    depends_on:
+      relay:
+        condition: service_healthy
+    environment:
+      - MODE=node
+      - RELAY_URL=ws://relay:18790
+      - NODE_NAME=ClawNode1
+      - LOG_LEVEL=info
+    ports:
+      - "18789:18789"
+      - "18793:18792"
+    volumes:
+      - node-data:/app/data
+
+volumes:
+  relay-data:
+  node-data:

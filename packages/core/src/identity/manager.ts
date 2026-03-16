@@ -7,6 +7,7 @@ import * as ed from '@noble/ed25519';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import type { AgentCard, AgentIdentity, AgentSkill } from '../types/index.js';
+import { encryptPrivateKey, decryptPrivateKey, type EncryptedKey } from '../crypto/key-encryption.js';
 
 // ============================================
 // Key Types
@@ -205,6 +206,43 @@ export class IdentityManager {
       ...updates,
     };
     this.identity.updatedAt = Date.now();
+  }
+
+  /**
+   * Export identity with encrypted private key
+   */
+  async exportEncrypted(password: string): Promise<string> {
+    if (!this.identity || !this.identity.privateKey) {
+      throw new Error('No identity or private key loaded');
+    }
+    const encrypted = encryptPrivateKey(this.identity.privateKey, password);
+    const exportable = {
+      ...this.identity,
+      privateKey: undefined as undefined,
+      encryptedPrivateKey: JSON.stringify(encrypted),
+    };
+    return JSON.stringify(exportable);
+  }
+
+  /**
+   * Import identity with encrypted private key and decrypt it
+   */
+  async importEncrypted(json: string, password: string): Promise<ClawIdentity> {
+    const parsed = JSON.parse(json) as ClawIdentity & { encryptedPrivateKey?: string };
+    if (!parsed.encryptedPrivateKey) {
+      throw new Error('No encrypted private key found in identity data');
+    }
+    const encryptedData = JSON.parse(parsed.encryptedPrivateKey) as EncryptedKey;
+    const privateKey = decryptPrivateKey(encryptedData, password);
+    const identityData: ClawIdentity = {
+      publicKey: parsed.publicKey,
+      privateKey,
+      agentCard: parsed.agentCard,
+      createdAt: parsed.createdAt,
+      updatedAt: parsed.updatedAt,
+      version: parsed.version,
+    };
+    return this.importIdentity(JSON.stringify(identityData));
   }
 
   // ============================================

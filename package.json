@@ -10,6 +10,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "test:e2e": "vitest run --config tests/vitest.config.ts",
+    "test:all": "pnpm -r test && pnpm test:e2e",
     "lint": "pnpm -r lint",
     "clean": "pnpm -r clean",
     "typecheck": "pnpm -r typecheck"

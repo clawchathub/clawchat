@@ -7,8 +7,11 @@ import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import type { WebSocket } from 'ws';
 import type { A2AMessage, AgentCard } from '@clawchat/core';
+import { TokenBucketRateLimiter, RateLimitPresets } from '@clawchat/core';
+import { DEFAULT_RELAY_PORT } from '@clawchat/core';
 import * as ed from '@noble/ed25519';
 import { v4 as uuidv4 } from 'uuid';
+import { validateMessageSize, validateRelayAgentCard, checkRateLimit, MAX_MESSAGE_SIZE } from './middleware.js';
 
 // ============================================
 // Types
@@ -31,11 +34,26 @@ interface QueuedMessage {
   delivered: boolean;
 }
 
+interface Logger {
+  info: (msg: string) => void;
+  error: (msg: string, err?: unknown) => void;
+  warn: (msg: string) => void;
+  debug: (msg: string) => void;
+}
+
+const defaultLogger: Logger = {
+  info: (msg: string) => console.log(`[RelayServer] ${msg}`),
+  error: (msg: string, err?: unknown) => console.error(`[RelayServer] ${msg}`, err),
+  warn: (msg: string) => console.warn(`[RelayServer] ${msg}`),
+  debug: (msg: string) => console.debug(`[RelayServer] ${msg}`),
+};
+
 interface RelayConfig {
-  port: number;
+  port?: number;
   host: string;
   messageRetentionMs: number; // How long to keep undelivered messages
   maxQueueSize: number;
+  logger?: Logger;
 }
 
 // ============================================
@@ -48,16 +66,24 @@ export class RelayServer {
   private agents: Map<string, ConnectedAgent> = new Map();
   private messageQueue: Map<string, QueuedMessage[]> = new Map();
   private agentRegistry: Map<string, AgentCard> = new Map();
+  private registrationLimiter: TokenBucketRateLimiter;
+  private log: Logger;
 
   constructor(config: Partial<RelayConfig> = {}) {
     this.config = {
-      port: config.port ?? 18790,
+      port: config.port ?? DEFAULT_RELAY_PORT,
       host: config.host ?? '0.0.0.0',
       messageRetentionMs: config.messageRetentionMs ?? 7 * 24 * 60 * 60 * 1000, // 7 days
       maxQueueSize: config.maxQueueSize ?? 1000,
+      logger: config.logger,
     };
 
-    this.fastify = Fastify({ logger: true });
+    this.log = this.config.logger ?? defaultLogger;
+
+    this.fastify = Fastify({ logger: false });
+
+    // Initialize rate limiter
+    this.registrationLimiter = new TokenBucketRateLimiter(RateLimitPresets.relay);
   }
 
   /**
@@ -68,8 +94,8 @@ export class RelayServer {
 
     this.setupRoutes();
 
-    await this.fastify.listen({ port: this.config.port, host: this.config.host });
-    console.log(`Relay server listening on ${this.config.host}:${this.config.port}`);
+    await this.fastify.listen({ port: this.config.port!, host: this.config.host });
+    this.log.info(`Relay server listening on ${this.config.host}:${this.config.port}`);
   }
 
   /**
@@ -77,6 +103,7 @@ export class RelayServer {
    */
   async stop(): Promise<void> {
     await this.fastify.close();
+    this.log.info('Relay server stopped');
   }
 
   /**
@@ -111,9 +138,8 @@ export class RelayServer {
     // WebSocket endpoint for agent connections
     this.fastify.register(async (fastify) => {
       fastify.get('/ws', { websocket: true }, (connection, _req) => {
-        // Type the connection properly for fastify-websocket
-        const ws = (connection as any).socket as WebSocket;
-        this.handleConnection(ws);
+        // @fastify/websocket v10: connection IS the WebSocket
+        this.handleConnection(connection as unknown as WebSocket);
       });
     });
 
@@ -148,10 +174,40 @@ export class RelayServer {
 
     socket.on('message', async (data: Buffer) => {
       try {
+        // Validate message size first
+        const sizeValidation = validateMessageSize(data);
+        if (!sizeValidation.valid) {
+          socket.send(JSON.stringify({
+            type: 'error',
+            error: sizeValidation.error,
+          }));
+          return;
+        }
+
         const msg = JSON.parse(data.toString());
 
         if (msg.type === 'register') {
           const { publicKey: claimedPublicKey, agentCard, signature, timestamp } = msg;
+
+          // Validate agent card
+          const cardValidation = validateRelayAgentCard(agentCard);
+          if (!cardValidation.valid) {
+            socket.send(JSON.stringify({
+              type: 'error',
+              error: cardValidation.error,
+            }));
+            return;
+          }
+
+          // Check rate limit
+          const rateLimitResult = checkRateLimit(this.registrationLimiter, claimedPublicKey);
+          if (!rateLimitResult.allowed) {
+            socket.send(JSON.stringify({
+              type: 'error',
+              error: rateLimitResult.error,
+            }));
+            return;
+          }
 
           // Verify signature to prevent impersonation
           // Signature should be: sign(publicKey + timestamp + agentCardHash)
@@ -191,7 +247,7 @@ export class RelayServer {
             });
 
             this.agentRegistry.set(claimedPublicKey, agentCard);
-            console.log(`Agent registered: ${claimedPublicKey}`);
+            this.log.info(`Agent registered: ${claimedPublicKey}`);
 
             // Deliver queued messages
             this.deliverQueuedMessages(claimedPublicKey);
@@ -207,7 +263,7 @@ export class RelayServer {
           this.routeMessage(msg.to, msg.message, publicKey);
         }
       } catch (error) {
-        console.error('Error handling message:', error);
+        this.log.error('Error handling message', error);
         socket.send(JSON.stringify({
           type: 'error',
           error: 'Internal server error',
@@ -218,7 +274,7 @@ export class RelayServer {
     socket.on('close', () => {
       if (publicKey) {
         this.agents.delete(publicKey);
-        console.log(`Agent disconnected: ${publicKey}`);
+        this.log.info(`Agent disconnected: ${publicKey}`);
       }
     });
   }

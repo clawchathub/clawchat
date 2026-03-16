@@ -25,3 +25,9 @@ export * from './intervention/index.js';
 
 // Connection Code
 export * from './connection-code/index.js';
+
+// Logging
+export * from './logging/index.js';
+
+// Key Encryption
+export { encryptPrivateKey, decryptPrivateKey, type EncryptedKey } from './crypto/key-encryption.js';

@@ -24,8 +24,8 @@ const DEFAULT_BOOTSTRAP_NODES: NodeInfo[] = [];
  */
 interface Logger {
   info: (msg: string) => void;
-  debug: (obj: object, msg: string) => void;
-  error: (obj: object, msg: string) => void;
+  debug: (msg: string) => void;
+  error: (msg: string) => void;
   warn: (msg: string) => void;
 }
 
@@ -39,22 +39,23 @@ export class PeerDiscovery {
   private bootstrapNodes: NodeInfo[];
   private running: boolean = false;
 
-  constructor(config: PeerDiscoveryConfig) {
-    this.logger = {
+  constructor(config: PeerDiscoveryConfig & { logger?: Logger }) {
+    this.logger = config.logger ?? {
       info: (msg: string) => console.log(`[PeerDiscovery] ${msg}`),
-      debug: (obj: object, msg: string) => console.debug(`[PeerDiscovery] ${msg}`, obj),
-      error: (obj: object, msg: string) => console.error(`[PeerDiscovery] ${msg}`, obj),
+      debug: (msg: string) => console.debug(`[PeerDiscovery] ${msg}`),
+      error: (msg: string) => console.error(`[PeerDiscovery] ${msg}`),
       warn: (msg: string) => console.warn(`[PeerDiscovery] ${msg}`)
     };
     this.bootstrapNodes = config.bootstrapNodes ?? DEFAULT_BOOTSTRAP_NODES;
 
-    // 创建Kademlia节点
+    // 创建Kademlia节点 (传递 logger)
     this.dht = new KademliaNode({
       nodeId: config.localNodeId,
       port: config.port,
       k: config.k,
       alpha: config.alpha,
-      bootstrapNodes: this.bootstrapNodes
+      bootstrapNodes: this.bootstrapNodes,
+      logger: this.logger
     });
   }
 
@@ -102,7 +103,7 @@ export class PeerDiscovery {
     const success = await this.dht.store(key, value, 3600); // 1小时TTL
 
     if (success) {
-      this.logger.debug({ nodeId: nodeIdToHex(peerInfo.nodeId) }, '节点信息已发布到DHT');
+      this.logger.debug(`节点信息已发布到DHT nodeId=${nodeIdToHex(peerInfo.nodeId)}`);
     } else {
       this.logger.warn(`节点信息发布失败`);
     }
@@ -118,16 +119,16 @@ export class PeerDiscovery {
     const value = await this.dht.findValue(key);
 
     if (!value) {
-      this.logger.debug({ nodeId: nodeIdToHex(nodeId) }, '未找到节点');
+      this.logger.debug(`未找到节点 nodeId=${nodeIdToHex(nodeId)}`);
       return undefined;
     }
 
     try {
       const peerInfo = this.deserializePeerInfo(value);
-      this.logger.debug({ nodeId: nodeIdToHex(nodeId) }, '找到节点');
+      this.logger.debug(`找到节点 nodeId=${nodeIdToHex(nodeId)}`);
       return peerInfo;
     } catch (error) {
-      this.logger.error({ error }, '解析节点信息失败');
+      this.logger.error(`解析节点信息失败: ${error}`);
       return undefined;
     }
   }
@@ -195,7 +196,7 @@ export class PeerDiscovery {
 
       return peers;
     } catch (error) {
-      this.logger.error({ error }, '解析能力索引失败');
+      this.logger.error(`解析能力索引失败: ${error}`);
       return [];
     }
   }
